@@ -14,10 +14,10 @@
         document.addEventListener("DOMContentLoaded", () => {
             const gridAPI = agGrid.createGrid(document.querySelector("#grid"), {
                 columnDefs: [
-                    { field: "name" },
-                    { field: "price" },
-                    { field: "originalPrice" },
-                    { field: 'link', cellRenderer: ({ value }) => `<a href="${value}" target="_blank">链接</a>` }
+                    { field: "name", headerName: '名称' },
+                    { field: "price", headerName: '价格' },
+                    { field: "originalPrice", headerName: '原价' },
+                    { field: 'link', headerName: '链接', cellRenderer: ({ value }) => `<a href="${atob(value)}" target="_blank">链接</a>` }
                 ],
                 defaultColDef: {
                     flex: 1,
@@ -25,7 +25,7 @@
                     filter: true,
                 },
             });
-            fetch('/list.json')
+            fetch('./list.json')
                 .then((response) => response.json())
                 .then(data => {
                     gridAPI?.setGridOption('rowData', data)
