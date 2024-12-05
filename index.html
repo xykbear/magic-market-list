@@ -6,29 +6,116 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Magic Market</title>
     <script src="https://cdn.jsdelivr.net/npm/ag-grid-community/dist/ag-grid-community.min.js"></script>
+    <style>
+        :root {
+            --main-color: #786df6;
+            --hover-color: color-mix(in srgb, transparent, var(--main-color) 12%);
+            --text-hover-color: color-mix(in srgb, var(--main-color) 80%, white 20%);
+        }
+
+        .ag-theme-quartz,
+        .ag-theme-quartz-dark,
+        .ag-theme-quartz-auto-dark {
+            --ag-active-color: var(--main-color);
+        }
+
+        .header {
+            margin-bottom: 8px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .info {
+            flex: 1;
+            padding: 0.5rem;
+            border: 1px solid;
+            border-radius: 8px;
+            background-color: var(--hover-color);
+            border-color: var(--main-color);
+            color: var(--main-color);
+            font-size: 12px;
+        }
+
+        svg {
+            height: 1rem;
+            width: 1rem;
+        }
+
+        .clear-filter {
+            cursor: pointer;
+            padding: 0.5rem;
+            fill: var(--main-color);
+            display: flex;
+            align-items: center;
+            border-radius: 8px;
+            margin-right: 8px;
+        }
+
+        .clear-filter:hover {
+            background-color: var(--hover-color);
+        }
+
+        .link {
+            fill: var(--main-color);
+        }
+
+        .link:hover {
+            fill: var(--text-hover-color);
+        }
+    </style>
 </head>
 
 <body>
-    <div id="grid" class="ag-theme-quartz" style="height: 100vh"></div>
+    <div class="header">
+        <div class="info">
+            数据更新于：<label id="lastUpdate"></label>。不保证链接时效性，如有需求请私联。
+        </div>
+        <div role="button" class="clear-filter" id="clearFilter" title="清除过滤条件">
+            <svg xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 512 512"><!--!Font Awesome Free 6.7.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.-->
+                <path
+                    d="M3.9 54.9C10.5 40.9 24.5 32 40 32l432 0c15.5 0 29.5 8.9 36.1 22.9s4.6 30.5-5.2 42.5L320 320.9 320 448c0 12.1-6.8 23.2-17.7 28.6s-23.8 4.3-33.5-3l-64-48c-8.1-6-12.8-15.5-12.8-25.6l0-79.1L9 97.3C-.7 85.4-2.8 68.8 3.9 54.9z" />
+            </svg>
+        </div>
+    </div>
+    <div id="grid" class="ag-theme-quartz" style="height: calc(100vh - 59px)"></div>
     <script>
         document.addEventListener("DOMContentLoaded", () => {
+            const str = 'aHR0cHM6Ly9tYWxsLmJpbGliaWxpLmNvbS9uZXVsLW5leHQvaW5kZXguaHRtbD9pdGVtc0lkPXswfSZwYWdlPW1hZ2ljLW1hcmtldF9kZXRhaWwmbm9UaXRsZUJhcj0xJmZyb209bWFya2V0X2luZGV4';
             const gridAPI = agGrid.createGrid(document.querySelector("#grid"), {
                 columnDefs: [
-                    { field: "name", headerName: '名称' },
-                    { field: "price", headerName: '价格' },
-                    { field: "originalPrice", headerName: '原价' },
-                    { field: 'link', headerName: '链接', cellRenderer: ({ value }) => `<a href="${atob(value)}" target="_blank">链接</a>` }
+                    { field: "name", headerName: '名称', flex: 4, editable: true },
+                    { field: "price", headerName: '价格', filter: 'agNumberColumnFilter' },
+                    { field: "originalPrice", headerName: '原价', filter: 'agNumberColumnFilter' },
+                    { headerName: '折扣', valueGetter: ({ data }) => data.price / data.originalPrice, valueFormatter: ({ value }) => Math.round(value * 100) + '%', filter: 'agNumberColumnFilter' },
+                    { field: 'updateTime', headerName: '上次更新', valueFormatter: ({ value }) => new Date(value).toLocaleString(), filter: 'agDateColumnFilter', flex: 2 },
+                    { field: 'id', headerName: '', flex: 0, width: 60, cellRenderer: ({ value }) => `<a class="link" title="链接" href="${atob(str).replace('{0}', value)}" target="_blank"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--!Font Awesome Free 6.7.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M579.8 267.7c56.5-56.5 56.5-148 0-204.5c-50-50-128.8-56.5-186.3-15.4l-1.6 1.1c-14.4 10.3-17.7 30.3-7.4 44.6s30.3 17.7 44.6 7.4l1.6-1.1c32.1-22.9 76-19.3 103.8 8.6c31.5 31.5 31.5 82.5 0 114L422.3 334.8c-31.5 31.5-82.5 31.5-114 0c-27.9-27.9-31.5-71.8-8.6-103.8l1.1-1.6c10.3-14.4 6.9-34.4-7.4-44.6s-34.4-6.9-44.6 7.4l-1.1 1.6C206.5 251.2 213 330 263 380c56.5 56.5 148 56.5 204.5 0L579.8 267.7zM60.2 244.3c-56.5 56.5-56.5 148 0 204.5c50 50 128.8 56.5 186.3 15.4l1.6-1.1c14.4-10.3 17.7-30.3 7.4-44.6s-30.3-17.7-44.6-7.4l-1.6 1.1c-32.1 22.9-76 19.3-103.8-8.6C74 372 74 321 105.5 289.5L217.7 177.2c31.5-31.5 82.5-31.5 114 0c27.9 27.9 31.5 71.8 8.6 103.9l-1.1 1.6c-10.3 14.4-6.9 34.4 7.4 44.6s34.4 6.9 44.6-7.4l1.1-1.6C433.5 260.8 427 182 377 132c-56.5-56.5-148-56.5-204.5 0L60.2 244.3z"/></svg></a>`, filter: false },
                 ],
                 defaultColDef: {
                     flex: 1,
-                    sorter: true,
+                    sortable: true,
                     filter: true,
                 },
+                singleClickEdit: true,
+                onFilterChanged: e => {
+                    const model = e.api.getFilterModel()
+                    if (model) {
+                        localStorage.setItem('filter', JSON.stringify(model))
+                    }
+                }
             });
+            document.querySelector('#clearFilter').addEventListener('click', () => {
+                gridAPI.setFilterModel(null)
+            })
             fetch('./list.json')
                 .then((response) => response.json())
                 .then(data => {
-                    gridAPI?.setGridOption('rowData', data)
+                    document.querySelector("#lastUpdate").innerHTML = new Date(data.updateTime).toLocaleString()
+                    gridAPI?.setGridOption('rowData', data.data)
+                    const model = localStorage.getItem('filter')
+                    if (model) {
+                        gridAPI?.setFilterModel(JSON.parse(model))
+                    }
                 })
         })
     </script>
