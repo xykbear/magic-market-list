@@ -41,7 +41,9 @@
             width: 1rem;
         }
 
-        .clear-filter {
+        .action-button {
+            font-family: Arial, Helvetica, sans-serif;
+            color: var(--main-color);
             cursor: pointer;
             padding: 0.5rem;
             fill: var(--main-color);
@@ -51,7 +53,7 @@
             margin-right: 8px;
         }
 
-        .clear-filter:hover {
+        .action-button:hover {
             background-color: var(--hover-color);
         }
 
@@ -70,7 +72,8 @@
         <div class="info">
             数据更新于：<label id="lastUpdate"></label>。不保证链接时效性，如有需求请私联。
         </div>
-        <div role="button" class="clear-filter" id="clearFilter" title="清除过滤条件">
+        <div role="button" class="action-button" id="filterNew" title="仅显示新品">NEW</div>
+        <div role="button" class="action-button" id="clearFilter" title="清除过滤条件">
             <svg xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 512 512"><!--!Font Awesome Free 6.7.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.-->
                 <path
@@ -90,6 +93,7 @@
                     { headerName: '折扣', valueGetter: ({ data }) => data.price / data.originalPrice, valueFormatter: ({ value }) => Math.round(value * 100) + '%', filter: 'agNumberColumnFilter' },
                     { field: 'updateTime', headerName: '上次更新', valueFormatter: ({ value }) => new Date(value).toLocaleString(), filter: 'agDateColumnFilter', flex: 2 },
                     { field: 'id', headerName: '', flex: 0, width: 60, cellRenderer: ({ value }) => `<a class="link" title="链接" href="${atob(str).replace('{0}', value)}" target="_blank"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--!Font Awesome Free 6.7.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M579.8 267.7c56.5-56.5 56.5-148 0-204.5c-50-50-128.8-56.5-186.3-15.4l-1.6 1.1c-14.4 10.3-17.7 30.3-7.4 44.6s30.3 17.7 44.6 7.4l1.6-1.1c32.1-22.9 76-19.3 103.8 8.6c31.5 31.5 31.5 82.5 0 114L422.3 334.8c-31.5 31.5-82.5 31.5-114 0c-27.9-27.9-31.5-71.8-8.6-103.8l1.1-1.6c10.3-14.4 6.9-34.4-7.4-44.6s-34.4-6.9-44.6 7.4l-1.1 1.6C206.5 251.2 213 330 263 380c56.5 56.5 148 56.5 204.5 0L579.8 267.7zM60.2 244.3c-56.5 56.5-56.5 148 0 204.5c50 50 128.8 56.5 186.3 15.4l1.6-1.1c14.4-10.3 17.7-30.3 7.4-44.6s-30.3-17.7-44.6-7.4l-1.6 1.1c-32.1 22.9-76 19.3-103.8-8.6C74 372 74 321 105.5 289.5L217.7 177.2c31.5-31.5 82.5-31.5 114 0c27.9 27.9 31.5 71.8 8.6 103.9l-1.1 1.6c-10.3 14.4-6.9 34.4 7.4 44.6s34.4 6.9 44.6-7.4l1.1-1.6C433.5 260.8 427 182 377 132c-56.5-56.5-148-56.5-204.5 0L60.2 244.3z"/></svg></a>`, filter: false },
+                    { field: 'isNew', hide: true }
                 ],
                 defaultColDef: {
                     flex: 1,
@@ -104,6 +108,9 @@
                     }
                 }
             });
+            document.querySelector('#filterNew').addEventListener('click', () => {
+                gridAPI.setFilterModel({ isNew: { filterType: "text", type: "true" } })
+            })
             document.querySelector('#clearFilter').addEventListener('click', () => {
                 gridAPI.setFilterModel(null)
             })
